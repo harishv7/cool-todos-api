@@ -21,7 +21,8 @@ app.get('/todos', function(req, res) {
 
 // GET request to fetch individual /todos/id
 app.get('/todos/:id', function(req, res) {
-	var todoId = parseInt(req.params.id);
+	// 10 here means we are using radix 10 (decimal system)
+	var todoId = parseInt(req.params.id, 10);
 
 	// using underscore library
 	var matchedTodo = _.findWhere(todos, {id: todoId});
@@ -37,6 +38,19 @@ app.get('/todos/:id', function(req, res) {
 		res.json(matchedTodo);
 	} else {
 		res.status(404).send();
+	}
+});
+
+// delete todos
+app.delete('/todos/:id', function(req, res) {
+	var todoId = parseInt(req.params.id, 10);
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	if(!matchedTodo) {
+		res.status(404).json({"error": "No todo found with that id"});
+	} else {
+		todos = _.without(todos, matchedTodo);
+		res.json(matchedTodo);
 	}
 });
 
