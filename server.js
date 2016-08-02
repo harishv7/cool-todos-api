@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
 var app = express();
 var PORT = process.env.PORT || 3000;
 var todos = [];
@@ -21,13 +22,16 @@ app.get('/todos', function(req, res) {
 // GET request to fetch individual /todos/id
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id);
-	var matchedTodo;
 
-	todos.forEach(function (todo) {
-		if(todoId === todo.id) {
-			matchedTodo = todo;
-		}
-	});
+	// using underscore library
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	// using plain JS
+	// todos.forEach(function (todo) {
+	// 	if(todoId === todo.id) {
+	// 		matchedTodo = todo;
+	// 	}
+	// });
 
 	if (matchedTodo) {
 		res.json(matchedTodo);
@@ -39,7 +43,16 @@ app.get('/todos/:id', function(req, res) {
 // POST request - can take data /todos
 // requires body-parser npm module
 app.post('/todos', function(req, res) {
-	var body = req.body;
+	// only pick the data we need: desc + completed, ignore any other KV pairs in JSON body
+	var body = _.pick(req.body, 'description', 'completed');
+
+	// check for bad requests 
+	if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+		return res.status(404).send();
+	}
+
+	// set body desc to trimmed value
+	body.description = body.description.trim();
 
 //add id field
 body.id = todoNextId;
